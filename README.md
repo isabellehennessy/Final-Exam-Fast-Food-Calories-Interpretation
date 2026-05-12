@@ -89,7 +89,7 @@ and R-squared.
 
 ### Model 1: Full Linear Regression
 This model used all predictors (total fat, cholesterol, sodium, protein, and restaurant type) 
-to predict calories. It is a baseline model for the rest
+to predict calories. It is a baseline model for the rest of the models.
 
 ### Model 2: Subset Linear Regression
 This model uses a reduced set of predictors (total fat, sodium, and protein) to test
