@@ -35,7 +35,7 @@ This combined dashboard brings together all the visualizations I created into on
 view. It summarizes the relationship between nurtitional variables and calorie content. 
 
 ### 1. Calorie Distribution
-![Calorie Distribtuion](calorie_distribution.png)
+![Calorie Distribtuion](plot1_calorie_distribution.png)
 
 This histogram shows the overall distribution of calories across all fast food items.
 I separated them into high (500+) and low (>500) calorie classes. The distribution
@@ -43,21 +43,21 @@ is right-skewed due to the high calorie outliers. The number of high and low
 calorie items are similar but there are more high outliers. 
 
 ### 2. Calories by Restaurant
-![Calories by Restaurant](calorie_restaurant.png)
+![Calories by Restaurant](plot2_calorie_restaurant.png)
 
 This boxplot compares calorie distributions across different fast food restaurants. 
 Most restaurants show similar distributions but McDonald's has a wider spread due
 to it's extreme outliers. 
 
 ### 3. Total Fat vs Calories
-![Total Fat vs Calories](totalfat_calories.png)
+![Total Fat vs Calories](plot3_totalfat_calories.png)
 
 This scatterplot shows a strong positive relationship between total fat and calories. 
 As total fat increases, calorie content does as well with a correlation of about 0.90.
 This indicated that total fat is a strong predictor in the dataset. 
 
 ### 4. Cholesterol by Calorie Class
-![Colesterol by Calorie Class](cholesterol_calories.png)
+![Colesterol by Calorie Class](plot4_cholesterol_calories.png)
 
 This boxplot compares cholesterol levels between low and high calorie food items. 
 High calorie items have significantly higher cholesterol levels on average. The mean 
@@ -65,7 +65,7 @@ and median cholesterol values are much higher in the high calorie group which sh
 strong relationship between cholesterol and calorie classification. 
 
 ### 5. Sodium vs Calories (by restaurant)
-![Sodium vs Calories](sodium_calories.png)
+![Sodium vs Calories](plot5_sodium_calories.png)
 
 This faceted scatterplot shows the relationship between sodium and calories
 across different fast food chains. McDonald's sows the strongest correlation, 
@@ -73,7 +73,7 @@ while Sonic shows the weakest. Overall, sodium is positively related to calorie
 content, but it varies by restaurant. 
 
 ### 6. Correlation Matrix
-![Correlation Matrix](correlation_matrix.png)
+![Correlation Matrix](plot6_correlation_matrix.png)
 
 This heatmap shows correlation between calories and the rest of the nutritional 
 predictors included. Calories are strongly correlated with total fat, sodium, 
