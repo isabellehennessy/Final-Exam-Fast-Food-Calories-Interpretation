@@ -148,7 +148,7 @@ evaluation metrics like MAE could have provided additional insight into the erro
 - `sodium_calories.png` — Sodium vs calories  
 - `correlation_matrix.png` — Correlation heatmap  
 - `rmse_plot.png` — Model RMSE comparison  
-- `rsquared_plot.png` — Model R² comparison  
+- `rsquared_plot.png` — Model R-squared comparison  
 - `Final_Exam_STA_309_Isabelle_Hennessy.Rmd` — Full code  
 - `Final_Exam_STA_309_Isabelle_Hennessy.html` - Knitted HTML version of full report
-- `README.txt` — Project report  
+- `README.txt` — Project report and overview
