@@ -1,5 +1,5 @@
 # README
-# Fast Food Nurtition Project
+# Fast Food Nutrition Project
 # STA 309 Final
 
 ## Overview: 
@@ -29,10 +29,10 @@ Variables include:
 ## Visualizations
 
 ### Full Dashboard
-![Fast Food Nurition Dashboard](dashboard.png)
+![Fast Food Nutrition Dashboard](dashboard.png)
 
 This combined dashboard brings together all the visualizations I created into one 
-view. It summarizes the relationship between nurtitional variables and calorie content. 
+view. It summarizes the relationship between nutritional variables and calorie content. 
 
 ### 1. Calorie Distribution
 ![Calorie Distribtuion](plot1_calorie_distribution.png)
