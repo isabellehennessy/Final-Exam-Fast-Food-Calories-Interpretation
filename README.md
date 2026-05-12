@@ -73,7 +73,7 @@ while Sonic shows the weakest. Overall, sodium is positively related to calorie
 content, but it varies by restaurant. 
 
 ### 6. Correlation Matrix
-![Correlation Matrix](plot_6correlation_matrix.png)
+![Correlation Matrix](plot6_correlation_matrix.png)
 
 This heatmap shows correlation between calories and the rest of the nutritional 
 predictors included. Calories are strongly correlated with total fat, sodium, 
