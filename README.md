@@ -113,7 +113,10 @@ improved the predictive accuracy.
 
 Below are the visualizations I used to compare the values for each model. 
 
+### RMSE Comparison
 ![RMSE Comparison](rmse_plot.png)
+
+### Rsquared Comparison
 ![Rsquared Comparison](rsquared_plot.png)
 
 ## Model Summary
