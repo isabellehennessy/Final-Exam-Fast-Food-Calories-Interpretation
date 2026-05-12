@@ -1,0 +1,361 @@
+---
+title: "Final Exam"
+author: "Isabelle Hennessy"
+date: "2026-05-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(patchwork)
+library(caret)
+```
+
+
+### Dataset Selection
+
+Dataset: Fast Food Calories
+
+Categorical Variables: restaurant, item
+Numeric Variables: calories, fat, cholesterol, sodium, carbs, sugar, protein, calcium, vitamin a, vitamin c
+
+Predictors: restaurant, total_fat, cholesterol, sodium, protein
+Response Variable: calories
+
+Data processing: missing values, recoding restaraunt variable to be factor, calorie classification (high vs low)
+
+The predictors I'm going to use are restaurant, total_fat, cholesterol, sodium, and protein with a response of calories. 
+
+Restaurant: categorical variable of the name of fast food chain (Sonic, Arbys, etc)
+Total_fat: numeric variable of total fat content for each item (grams)
+Cholesterol: numeric variable of cholesterol content in each item (milligrams)
+Sodium: numeric variable of sodium content in each item (milligrams)
+Protein: numeric variable of protein in each item (grams)
+
+Calories: amount of energy content provided by each item (kilocalories)
+
+Source: fastfoodnutrition.com / TidyTuesday
+
+### Data Pre-processing
+```{r}
+fastfood <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/refs/heads/main/data/2018/2018-09-04/fastfood_calories.csv")
+glimpse(fastfood)
+
+fastfoodclean <- fastfood |>
+  select(restaurant, item, calories, total_fat, cholesterol, sodium, protein) |>
+  mutate(restaurant = factor(restaurant),
+         calorie_class = ifelse(calories >=500, "High", "Low"),
+         calorie_class = factor(calorie_class, levels = c("Low", "High"))) |>
+  drop_na()
+
+glimpse(fastfoodclean)
+```
+
+
+In the above data cleaning, I loaded the original dataset and cleaned it up for the purpose of creating a meaningful dashboard. I selected my dataset to include restaurant, total_fat, cholesterol, sodium, and protein as the predictors with the response of calories. I also included item to see if there was any trend that could be noticed later. After, I converted restaurant to be a factor and made a calorie classification that made items with greater than or equal to 500 calories be "high" and under be "low". The reason for this is to group them for better visualization later on. After, I dropped the NA's from the dataset to make sure it was clean. 
+
+Predictors: restaurant, total_fat, cholesterol, sodium, protein
+Response: calories
+
+### Exploratory Data Analysis and Visualization
+
+#### Plot 1: Calorie Distribution
+```{r}
+calorie_table <- fastfoodclean |>
+  count(calorie_class)
+calorie_table
+
+calorie_distribution <- ggplot(fastfoodclean, aes(x = calories, fill = calorie_class)) +
+  geom_histogram(bins = 30) +
+  scale_fill_manual(values = c("Low" = "forestgreen", "High" = "firebrick2")) +
+  annotate("label", x = 315, y = 30, label = "Low Calorie\n250 items", size = 5) +
+  annotate("label", x = 650, y = 30, label = "High Calorie\n264 items", size = 5) +
+  labs(
+    title = "Distribution of Calories in Fast Food Items",
+    x = "Calories", 
+    y = "Count", 
+    fill = "Calorie Class", 
+    subtitle = "Colored by Calorie Class (high >= 500, low < 500)") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
+  
+calorie_distribution
+```
+
+The above plot is a histogram that shows the overall calorie distribution which is colored by calorie class. From this, they count for each class is pretty close with low calories having 250 items and high calorie having 264 but the histogram is right skewed due to the extreme high calorie outliers. 
+
+
+#### Plot 2: Calories by Restaurant
+```{r}
+calorie_restaurant <- ggplot(fastfoodclean,aes(x = restaurant, y = calories, fill = restaurant)) +
+  geom_boxplot() + 
+  annotate("text", x = 5, y = 2100, label = "McDonald's has\nextreme outliers", fontface = "bold", color = "firebrick2", size = 5) +
+  annotate("text", x = 5, y = 2430, label = "\u2605", color = "firebrick2", size = 8, vjust = 0.4)+
+  annotate("text", x = 5, y = 1770, label = "\u2605", color = "firebrick2", size = 8, vjust = 0.4)+
+  labs(
+    title = "Calories by Restaurant", 
+    subtitle = "Comparison of calorie distribution across fast food chains; McDonald's with largest spread", 
+    x = "Restaurant", 
+    y = "Calories") +
+  theme_minimal() + 
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
+
+calorie_restaurant
+```
+
+The above plot is a box plot distribution of the calories by restaurant. It shows the min, Q1, med, Q3, and max like a normal box plot. I added annotations to highlight McDonald's extreme high outliers. The distribtuions for the rest of the restraunts are pretty similar but McDonalds has many outliers. 
+
+#### Plot 3: Total fat vs calories
+```{r}
+cor(fastfoodclean$total_fat, fastfoodclean$calories)
+
+totalfat_calories <- ggplot(fastfoodclean, aes(x = total_fat, y = calories)) +
+  geom_point(alpha = 0.6) + 
+  geom_smooth(se = FALSE, color = "forestgreen", linewidth = 1.5) +
+  annotate("text", x = 125, y = 2250, label = "Correlation = 0.90", size = 6, color = "forestgreen") +
+  labs(title = "Total Fat vs Calories",
+       subtitle = "Strong, positive correlation between predictor of total fat and response of calories", 
+       x = "Total Fat (g)",
+       y = "Calories") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+
+totalfat_calories
+```
+
+The plot above is a scatterplot between total fat and calories with a trend line on top. There is a strong, positive correlation between the predictor of total fat and response of calories at about 0.90. 
+
+#### Plot 4: Cholesterol by Calorie Class
+```{r}
+summarystats <- fastfoodclean |>
+  group_by(calorie_class) |>
+  summarise(mean_chol = mean(cholesterol, na.rm = TRUE), 
+            med_chol = median(cholesterol, na.rm = TRUE))
+summarystats
+
+cholesterol_calories <- ggplot(fastfoodclean, aes(x = calorie_class, y = cholesterol, fill = calorie_class)) +
+  geom_boxplot() +
+  stat_summary(fun = mean, geom= "point", shape = 8, size = 5) +
+  scale_fill_manual(values = c("Low" = "forestgreen", "High" = "firebrick2")) +
+  coord_cartesian(ylim = c(0,300)) +
+    annotate("label", x = 1, y = 160, label = "Mean = 41.4mg\nMedian = 40mg", size =  6, color = "forestgreen") +
+  annotate("label", x = 2, y = 160, label = "Mean = 104.2mg\nMedian = 90mg", size =  6, color = "firebrick2") +
+  labs(
+    title = "Cholesterol by Calorie Class", 
+    subtitle = "Zoomed in to reduce effect of outliers, mean represented by star", 
+    x = "Calorie Class", 
+    y = "Cholesterol (mg)") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"), 
+        legend.position = "none")
+
+cholesterol_calories
+```
+
+The box plot above shows the relationship between cholesterol and calorie class. For the low calorie class (less than 500), the cholesterol is much lower on average compared to the high calorie class (>= 500). 
+
+#### Plot 5: Sodium vs Calories
+```{r}
+sodium_corr <- fastfoodclean |>
+  group_by(restaurant) |>
+  summarise(corr = cor(sodium, calories))
+
+corr_labels <- data.frame(
+  restaurant = c("Mcdonalds", "Sonic"),
+  label = c("Correlation = 0.95", "Correlation = 0.53"))
+
+sodium_calories <- ggplot(fastfoodclean, aes(x = sodium, y = calories, color = restaurant)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(se = FALSE, color = "gray40") +
+  facet_wrap(~restaurant, ncol = 4) +
+geom_text(
+    data = corr_labels, aes(x = 1750, y = 2000, label = label),size = 4, fontface = "bold") +
+  labs(
+    title = "Sodium vs Calories by Restaurant", 
+    subtitle = "McDonalds had the highest correlation, Sonic has the lowest", 
+    x = "Sodium (mg)", 
+    y = "Calories") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"), 
+        legend.position = "none")
+  
+sodium_calories
+```
+
+The above plot is a scatterplot that is faceted by restaurant to show each relationship. I calculation the correlations for each and McDonalds had the highest at 0.95, and the lowest was Sonic at 0.53. The relationship overall is strong and linear. 
+
+#### Plot 6: Protein vs Calories
+```{r}
+corr_df <- cor(
+  fastfoodclean |>
+    select(calories, total_fat, cholesterol, sodium, protein))
+
+corr_long <- as.data.frame(as.table(corr_df))
+
+correlation_matrix <- ggplot(corr_long, aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(Freq, 2)), size = 4) +
+  scale_fill_gradient2(
+    low = "firebrick2", mid = "white", high = "forestgreen",
+    midpoint = 0, name = "Correlation"
+  ) +
+  labs(title = "Correlation Matrix of Fast Food Nutrients", 
+       subtitle = "Calories show strong correlation with predictors") +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    plot.title = element_text(face = "bold")) 
+
+correlation_matrix
+```
+
+
+The above plot is a correlation matrix between calories and the predictors. There is a strong correlation between the calories and the predictors but also between the predictors themselves.
+
+
+#### Dashboard 
+```{r}
+dashboard <- 
+  (calorie_distribution | calorie_restaurant) /
+  (totalfat_calories | cholesterol_calories) /
+  (sodium_calories | correlation_matrix) +
+  plot_layout(heights = c(1, 1, 1)) +
+  plot_annotation(
+    title = "Fast Food Nutrition Dashboard Analysis",
+    subtitle = "Exploring the key relationships between calories and predictors across restaurants",
+    caption = "Source: fastfoodnutrition.com & TidyTuesday",
+    theme = theme(
+      plot.title = element_text(size = 24, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 16, hjust = 0.5),
+      plot.caption = element_text(size = 14)))
+
+dashboard
+
+ggsave("dashboard.png", dashboard, width = 60, height = 35, units = "cm")
+```
+
+
+The above code created my dashboard with all six plots. I included a title, subtitle and caption to convey more information and made sure the size looked good. 
+
+#### Save all plots as PNG
+
+```{r}
+ggsave("plot1_calorie_distribution.png", calorie_distribution, width = 40, height = 20, units = "cm")
+ggsave("plot2_calorie_restaurant.png", calorie_restaurant, width = 40, height = 20, units = "cm")
+ggsave("plot3_totalfat_calories.png", totalfat_calories, width = 40, height = 20, units = "cm")
+ggsave("plot4_cholesterol_calories.png", cholesterol_calories, width = 40, height = 20, units = "cm")
+ggsave("plot5_sodium_calories.png", sodium_calories, width = 40, height = 20, units = "cm")
+ggsave("plot6_correlation_matrix.png", correlation_matrix, width = 40, height = 20, units = "cm")
+```
+
+
+This code saved all of the graphs into png images.
+
+### Predictive Modeling
+
+#### Model 1: Linear Regression (Full Model)
+```{r}
+ctrl <- trainControl(method = "cv", number = 5)
+
+set.seed(512)
+
+lm_full <- train(calories ~ restaurant + total_fat + cholesterol + sodium + protein,
+                 data = fastfoodclean,
+                 method = "lm", 
+                 trControl = ctrl)
+```
+
+This model uses all predictors to estimate the linear relationships between calories and the nutrient predictors. It is used as a baseline model. 
+
+#### Model 2: Linear Regression (Subset)
+```{r}
+set.seed(512)
+
+lm_subset <- train(calories ~ total_fat + protein + sodium, 
+                   data = fastfoodclean,
+                   method = "lm", 
+                   trControl = ctrl)
+```
+
+This model uses the three strongest predictors based on the correlation matrix. This is used to test whether the reduced model can maintain the same accuracy as the full model. 
+
+#### Model 3: Regression Tree
+```{r}
+set.seed(512)
+
+tree_model <- train(calories ~ restaurant + total_fat + cholesterol + sodium + protein,
+                 data = fastfoodclean,
+                 method = "rpart", 
+                 trControl = ctrl)
+```
+
+This model uses a decision tree to capture relationships between the nutritional predictors and calorie output. It automatically splits the data which is useful for identifying how different levels influence the calories. 
+
+#### Model 4: Random Forest
+```{r}
+set.seed(512)
+
+rf_model <- train(calories ~ restaurant + total_fat + cholesterol + sodium + protein,
+                 data = fastfoodclean,
+                 method = "rf", 
+                 trControl = ctrl, 
+                 importance = TRUE)
+```
+
+
+The random forest model improved predictive performance compared to the regression tree because it builds multiple decision trees on different subsets of data. This reduces overfitting and improves the predictive power of the model. It is good for this because the predictors are correlated and helps capture the relationships. 
+
+#### Model 5: Interaction Linear Regression
+```{r}
+set.seed(512)
+
+lm_interaction <- train(calories ~ total_fat * sodium + cholesterol + protein + restaurant,
+                 data = fastfoodclean,
+                 method = "lm", 
+                 trControl = ctrl)
+```
+
+This model is a continuation of linear regression but it includes the interaction between total fat and sodium. This is important because a lot of times in nutrition, the variables depend on each other. 
+
+
+### Model Comparison
+```{r}
+models <- resamples(list(
+  LM_full = lm_full, 
+  LM_subset = lm_subset,
+  Tree = tree_model, 
+  RandomForest = rf_model, 
+  LM_interaction = lm_interaction))
+
+summary(models)
+
+rmse_plot <- ggplot(models, metric="RMSE") +
+  labs(title = "Comparison of Models RMSE Values") +
+  theme_minimal()
+
+rsquared_plot <- ggplot(models, metric="Rsquared") +
+labs(title = "Comparison of Models Rsquared Values") +
+  theme_minimal()
+```
+
+The above code creates an output that summarizes the MAE, RMSE, and Rsquared values for the models. For RMSE, the linear model with interaction (Model 5) performed the best with a value of 71.9, next was the full linear model at 75.5. The worst model was the tree with a value of 164.4 For rsquared, the linear model with interaction performed the best with 93.4% of the variability being explained and the wort was the tree at 67.1%. 
+
+Based on these results, the interaction model performs the best overall because it has the lowest RMSE (71.9) and highest rsquared (0.934) among the models. This suggests that the calorie content in fast food is largely explained by linear relationships between all of the predictors and with interaction effects. The full linear performs similarly with a RMSE of 75.5 and rsquared of 0.93.The worst model by far is the regression tree with a high RMSE value of 164.4 and low rsquared of 0.671. This indicated that it has poor predictive performance. Overall, the linear regression model with interaction performs the best because in nutrition there are relationships between the variables and they rely on each other. 
+
+Although the interaction model performed best, it's improvement over the full linear model is very small. This suggests that adding complexity doesn't add much in return. There can be better models out there that I did not test such as KNN or a different subset of predictors. This model also doesn't capture the nonlinear effects that could occur in this situation. There also is evidence of mulitcollinearity in this dataset. 
+
+I used RMSE and rsquared for this but the MAE for the interaction model was also the lowest at 47.1. The tree model had the highest at 120.6. If the response variable had categories like I created (high vs low), AUC would be more appropriate but I didn't want to over complicate the model. 
+
+These results suggest that calorie content in fast food can be predicted using total_fat, sodium, cholesterol, protein, and the restaurant. There is a strong linear interaction between the predictors and response which shows that calorie content is largely driven by linear relationships. However, the prediction error shows that other additional factors could also influence this. These models provide useful estimates but there are other factors that contribute to the calorie content. 
+
+#### Save comparison plots
+```{r}
+ggsave("rmse_plot.png", rmse_plot, width = 40, height = 20, units = "cm")
+ggsave("rsquared_plot.png", rsquared_plot, width = 40, height = 20, units = "cm")
+```
+
+
