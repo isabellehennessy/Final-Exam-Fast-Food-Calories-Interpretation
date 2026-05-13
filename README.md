@@ -11,7 +11,7 @@ than or equal to 500 calories into the "High" calorie class and less than 500
 into the "Low" calorie class. 
 
 The goal of this is to create a meaningful dashboard that analyzes the relationships
-and identify the best predictive model for calorie estimation. 
+and identifies the best predictive model for calorie estimation. 
 
 ## Data Sources
 All data used in this project comes from fastfoodnutrition.com and the dataset
@@ -47,7 +47,7 @@ calorie items are similar but there are more high outliers.
 
 This boxplot compares calorie distributions across different fast food restaurants. 
 Most restaurants show similar distributions but McDonald's has a wider spread due
-to it's extreme outliers. 
+to its extreme outliers. 
 
 ### 3. Total Fat vs Calories
 ![Total Fat vs Calories](plot3_totalfat_calories.png)
@@ -68,7 +68,7 @@ strong relationship between cholesterol and calorie classification.
 ![Sodium vs Calories](plot5_sodium_calories.png)
 
 This faceted scatterplot shows the relationship between sodium and calories
-across different fast food chains. McDonald's sows the strongest correlation, 
+across different fast food chains. McDonald's shows the strongest correlation, 
 while Sonic shows the weakest. Overall, sodium is positively related to calorie 
 content, but it varies by restaurant. 
 
@@ -102,7 +102,7 @@ it is the worst among all models because it does not generalize well for predict
 calorie content. 
 
 ### Model 4: Random Forest
-This model builds multiple decision tress and averages their predictions to improve
+This model builds multiple decision trees and averages their predictions to improve
 accuracy. It performs well but not as well as the linear models. 
 
 ### Model 5: Interaction Linear Regression
